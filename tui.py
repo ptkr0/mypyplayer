@@ -123,7 +123,7 @@ class SongInfo(Label):
             self.label.update("No song playing at the moment!")
             player.check_if_playing()
         elif player.isPlaying:
-            self.label.update(str(player)"xd")
+            self.label.update(str(player))
             player.check_if_playing()
 
 class SongTable(DataTable):

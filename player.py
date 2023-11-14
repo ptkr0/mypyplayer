@@ -13,6 +13,7 @@ class Player:
         self.songArtist = None
         self.songLength = 0
         self.volume = 0.5
+        self.start_time = 0
         mixer.music.set_volume(self.volume)
 
     def play_song(self, song):
@@ -76,7 +77,7 @@ class Player:
 
     def rewind_to_start(self):
         mixer.music.rewind()
-        mixer.music.set_pos(0)
+        mixer.music.play(0, 0)
 
 
             
