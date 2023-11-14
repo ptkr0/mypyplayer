@@ -40,7 +40,6 @@ def prepare_all_songs():
     scan_folder(musicDirPath, allSongs)
 
 player = Player()
-player.change_volume(0.15)
 
 class AboutScreen(ModalScreen):
 
@@ -99,7 +98,7 @@ class Controller(Widget):
                 yield Button("❚❚", id="pauseResume")
                 yield Button("+5s>", id="plusFive")
                 yield Button("▷||", id="toEnd")
-                yield Slider(min=0, max=10, step=1, id="volumeSlider")
+                yield Slider(min=0, max=100, step=1, value=int(player.volume*100), id="volumeSlider")
 
     @on(Button.Pressed, "#pauseResume")
     def pause_resume(self) -> None:
@@ -108,6 +107,23 @@ class Controller(Widget):
     @on(Button.Pressed, "#toStart")
     def to_start(self) -> None:
         player.rewind_to_start()
+
+    @on(Button.Pressed, "#minusFive")
+    def minus_five(self) -> None:
+        player.skip_to(-5.0)
+
+    @on(Button.Pressed, "#plusFive")
+    def plus_five(self) -> None:
+        player.skip_to(5.0)
+
+    @on(Button.Pressed, "#toEnd")
+    def to_end(self) -> None:
+        player.skip_to_end()
+
+    @on(Slider.Changed, "#volumeSlider")
+    def on_slider_changed_slider1(self, event: Slider.Changed) -> None:
+        value = float(event.value/100)
+        player.change_volume(value)
 
 class SongInfo(Label):
 

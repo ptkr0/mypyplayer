@@ -13,6 +13,7 @@ class Player:
         self.songArtist = None
         self.songLength = 0
         self.volume = 0.5
+        self.elapsed_time = 0
         mixer.music.set_volume(self.volume)
 
     def play_song(self, song):
@@ -23,12 +24,13 @@ class Player:
             self.songLength = song.length
             self.songArtist = song.artist
             self.isPlaying = True
+            self.elapsed_time = 0
 
     def __str__(self):
         if self.isPlaying == False and self.isPaused == False:
             return f"No song is currently playing!"
         else:
-            return f"{self.songName} by: {self.songArtist} {timedelta(seconds = round(mixer.music.get_pos()/1000))}/{timedelta(seconds=self.songLength)}"
+            return f"{self.songName} by: {self.songArtist} {timedelta(seconds = self.elapsed_time+round(mixer.music.get_pos()/1000))}/{timedelta(seconds=self.songLength)}"
         
     def return_length(self):
         return timedelta(seconds=self.songLength)
@@ -37,7 +39,7 @@ class Player:
         if not self.isPlaying:
             return 0
         else:
-            return timedelta(seconds = round(mixer.music.get_pos()/1000))
+            return round((mixer.music.get_pos())/1000)
 
     def pause_resume_song(self):
         if not self.isPaused:
@@ -66,10 +68,14 @@ class Player:
             self.isPlaying = False
             self.songName = None
             self.songLength = 0
+            self.elapsed_time = 0
 
     def skip_to(self, number):
+        self.elapsed_time += (number)
+        if self.elapsed_time < 0:
+            self.elapsed_time = 0
         mixer.music.rewind()
-        mixer.music.set_pos(number)
+        mixer.music.play(0, self.elapsed_time)
 
     def play_next(self, song):
         mixer.music.queue(song.path)
@@ -78,7 +84,12 @@ class Player:
     def rewind_to_start(self):
         mixer.music.rewind()
         mixer.music.play(0, 0)
+        self.elapsed_time = 0
 
+    def skip_to_end(self):
+        mixer.music.rewind()
+        slen = round(self.songLength)
+        mixer.music.play(0, self.songLength)
 
             
         
