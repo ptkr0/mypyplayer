@@ -74,9 +74,10 @@ class Player:
     def play_next(self, song):
         mixer.music.queue(song.path)
 
+    """get_pos won't update if you rewind the music, since it shows time elapsed since play has started. this should work for now"""
     def rewind_to_start(self):
         mixer.music.rewind()
-        mixer.music.set_pos(0)
+        mixer.music.play(0, 0)
 
 
             
