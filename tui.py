@@ -31,6 +31,14 @@ Currently MyPyPlayer is a WIP. Hopefully one day I'll make it usable
                         Powered by MyPHPoL 2023
 """
 
+HELP_TEXT = """
+Welcome to MyPyPlayer - a simple music player written in Python
+Use your mouse or keyboard to navigate through the menus
+(mouse is more convenient, but it may cause problems)
+If you don't see your music remember to put it in 'mymusic' directory in the program files
+After that press 'R' to refresh table
+"""
+
 musicDirPath = r'.\mymusic'
 allSongs = Songlist("All Songs")
 queue = Songlist("Queue")
@@ -77,6 +85,43 @@ class AboutScreen(ModalScreen):
     def back_to_app(self) -> None:
         self.app.pop_screen()
 
+class HelpScreen(ModalScreen):
+
+    DEFAULT_CSS = """
+    HelpScreen {
+        align: center middle;
+    }
+
+    HelpScreen > Container {
+        width: auto;
+        height: auto;
+    }
+
+    HelpScreen > Container > Label {
+        margin: 1 3;
+    }
+
+    HelpScreen > Container > Horizontal {
+        width: auto;
+        height: auto;
+    }
+
+    HelpScreen > Container > Horizontal > Button {
+        margin: 2 4;
+    }
+    """
+
+    def compose(self) -> ComposeResult:
+        with Container():
+            yield Label(HELP_TEXT)
+            with Horizontal():
+                yield Button("Go Back", id="back", variant="success")
+
+    @on(Button.Pressed, "#back")
+    def back_to_app(self) -> None:
+        self.app.pop_screen()
+
+
 class Controller(Widget):
 
     DEFAULT_CSS = """
@@ -85,9 +130,20 @@ class Controller(Widget):
         layout: vertical;
         height: 5;
         margin: 1;
-        min-width: 50;
         padding: 1;
         dock: bottom;
+    }
+
+    Controller > Horizontal > Button {
+        width: 15;
+        border: solid white;
+        background:  $surface
+    }
+
+    Controller > Horizontal > Slider {
+        width: 28;
+        background:  $surface  ;
+        border: solid white;
     }
     """
 
@@ -145,23 +201,26 @@ class SongInfo(Label):
 class SongTable(DataTable):
     
     DEFAULT_CSS = "DataTable {height: 1fr}"
-
+    
     def compose(self) -> ComposeResult:
         yield DataTable()
 
     def on_mount(self) -> None:
         table = self.query_one(DataTable)
-        table.clear()
         table.add_columns("Title", "Artist", Text("Track Length", justify='right'))
-        for number, song in enumerate(allSongs.songList, start=1):
-            label = Text(str(number))
-            table.add_row(song.return_title(), song.return_artist(), Text(str(song.convert_time()), justify="right"), label=label, key=song)
         table.fixed_columns = 1
         table.cursor_type = "row"
         table.zebra_stripes = True
 
+    def fill_table(self) -> None:
+        table = self.query_one(DataTable)
+        table.clear()
+        for number, song in enumerate(allSongs.songList, start=1):
+            label = Text(str(number))
+            table.add_row(song.return_title(), song.return_artist(), Text(str(song.convert_time()), justify="right"), label=label, key=song)
+
+    """handler for selecting a row in the data table."""
     def on_data_table_row_selected(self, event: DataTable.RowSelected) -> None:
-        """Handler for selecting a row in the data table."""
         if player.isPlaying:
             queue.add_song(event.row_key.value)
             self.notify("Added to queue: "+event.row_key.value.title)
@@ -190,21 +249,23 @@ class PathScreen(ModalScreen):
             yield self.label
 
     def on_directory_tree_directory_selected( self, event: DirectoryTree.FileSelected) -> None:
-        """Display currently selected directory path"""
+        """display currently selected directory path"""
         self.label.update(str(event.path))
 
 
     def filter_paths(self, paths: Iterable[Path]) -> Iterable[Path]:
-        """Filter paths to non-hidden directories only."""
+        """filter paths to non-hidden directories only."""
         return [p for p in paths if p.is_dir() and not p.name.startswith(".")]
         
 class MyPyPlayer(App):
-    """A Textual app to play music."""
+    """a Textual app to play music."""
 
-    SCREENS = {"about": AboutScreen()}
+    SCREENS = {"about": AboutScreen(), "help": HelpScreen()}
     BINDINGS = [
         Binding("a", "push_screen('about')", "About The Player"), 
-        Binding("space", "play_resume", "Pause/Resume")
+        Binding("h", "push_screen('help')", "Help"), 
+        Binding("space", "play_resume", "Pause/Resume"),
+        Binding("r", "refresh", "Refresh Music Directory")
         ]
 
     def compose(self) -> ComposeResult:
@@ -215,17 +276,22 @@ class MyPyPlayer(App):
         yield Controller()
 
     def _on_mount(self) -> None:
+        self.query_one(SongTable).fill_table()
         self.monitor_progress = self.set_interval(0.1, self.monitor_track_progress, pause=False)
 
-    """Binding a footer button to an action"""
+    """binding a footer button to an action"""
     def action_play_resume(self) -> None:
         player.pause_resume_song()
 
-    """If song finished playing and there are still songs in the queue it will play that song"""
+    """if song finished playing and there are still songs in the queue it will play that song aka the queue controller"""
     def monitor_track_progress(self) -> None:
         if not player.isPlaying and not queue.check_if_empty():
             player.play_song(queue.songList[0])
             queue.remove_top_song()
+
+    def action_refresh(self) -> None:
+        prepare_all_songs()
+        self.query_one(SongTable).fill_table()
 
 if __name__ == "__main__":
     prepare_all_songs()
