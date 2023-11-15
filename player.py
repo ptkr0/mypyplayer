@@ -72,13 +72,16 @@ class Player:
             self.elapsed_time = 0
             mixer.music.unload()
 
+    """get_pos is really hard to work with and this function definetely doesn't work right all the time"""
     def skip_to(self, number):
         if self.isPlaying:
+            currentSongMoment = (float(mixer.music.get_pos()/1000)+self.elapsed_time)
             self.elapsed_time += (number)
-            if self.elapsed_time < 0:
-                self.elapsed_time = 0
-            mixer.music.rewind()
-            mixer.music.play(0, self.elapsed_time)
+            if mixer.music.get_pos()/1000 + self.elapsed_time <= 0:
+                self.rewind_to_start()
+            else:
+                mixer.music.rewind()
+                mixer.music.play(0, (currentSongMoment+(number)))
 
     """not used with the current queue controller"""
     def play_next(self, song):
