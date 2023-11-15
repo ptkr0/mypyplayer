@@ -177,7 +177,7 @@ class Controller(Widget):
         player.skip_to_end()
 
     @on(Slider.Changed, "#volumeSlider")
-    def on_slider_changed_slider1(self, event: Slider.Changed) -> None:
+    def on_slider_changed_slider(self, event: Slider.Changed) -> None:
         value = float(event.value/100)
         player.change_volume(value)
 
@@ -212,6 +212,7 @@ class SongTable(DataTable):
         table.cursor_type = "row"
         table.zebra_stripes = True
 
+    """thanks to splitting table creation to on_mount and fill_table i can refill table when i want"""
     def fill_table(self) -> None:
         table = self.query_one(DataTable)
         table.clear()
