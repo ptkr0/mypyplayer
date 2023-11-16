@@ -3,11 +3,12 @@ import eyed3
 from datetime import timedelta
 
 class Song:
-    def __init__(self, title, artist, length, path):
+    def __init__(self, title, artist, length, path, album):
         self.title = title
         self.artist = artist
         self.length = round(length)
         self.path = path
+        self.album = album
 
     def __str__(self):
         return f"{self.title:<50} {self.artist:<50} {self.convert_time()}"
@@ -19,10 +20,13 @@ class Song:
         return timedelta(seconds=self.length)
     
     def return_title(self):
-        return f"{self.title:<35}"
+        return f"{self.title:<25}"
     
     def return_artist(self):
-        return f"{self.artist:<35}"
+        return f"{self.artist:<25}"
+    
+    def return_album(self):
+        return f"{self.album:<25}"
 
 class Songlist:
     def __init__(self, name):
@@ -70,8 +74,12 @@ def scan_folder(path, songList):
                 title = file
             else:
                 title = audio.tag.title
+            if(audio.tag.album == None):
+                album = " "
+            else:
+                album = audio.tag.album
             length = audio.info.time_secs
-            song = Song(title, artist, length, filePath)
+            song = Song(title, artist, length, filePath, album)
             songList.add_song(song)
 
 

@@ -1,2 +1,3 @@
 mymusic/*
+!mymusic/.gitkeep 
 __pycache__/
