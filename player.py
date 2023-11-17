@@ -38,7 +38,7 @@ class Player:
         if not self.isPlaying:
             return 0
         else:
-            return self.songLength*100
+            return self.songLength*1000
     
     """not the most precise but works fine"""
     def return_moment(self):
@@ -104,8 +104,3 @@ class Player:
         if self.isPlaying:
             mixer.music.rewind()
             mixer.music.play(0, self.songLength)
-
-            
-        
-
-
