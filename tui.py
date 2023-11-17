@@ -129,7 +129,7 @@ class SongProgressBar(ProgressBar):
                     yield ProgressBar(show_eta=False, show_percentage=False)
 
     def _on_mount(self) -> None:
-        self.monitor_progress = self.set_interval(0.1, self.monitor_track_progress, pause=False)
+        self.monitor_progress = self.set_interval(0.01, self.monitor_track_progress, pause=False)
 
     def monitor_track_progress(self) -> None:
         if player.isPlaying:
@@ -145,9 +145,6 @@ class Controller(Widget):
         height: 6;
         margin: 1;
         dock: bottom;
-    }
-
-    Controller > Center > SongProgressBar {
     }
 
     Controller > Horizontal > Center > Button {
@@ -222,6 +219,73 @@ class SongInfo(Label):
             self.label.update(str(player))
             player.check_if_playing()
 
+class QueueScreen(Screen):
+
+    DEFAULT_CSS = """
+
+    DataTable {
+        height: 1fr;
+        width: 80fr;
+    }
+
+    QueueScreen {
+        content-align: center middle;
+    }
+
+    QueueScreen > Container {
+        width: auto;
+        height: auto;
+    }
+
+    QueueScreen > Container > DataTable {
+        dock: top;
+        width: auto;
+        height: auto;
+        margin: 2 4;
+    }
+
+    QueueScreen > Container > Horizontal > Button {
+        margin: 2 4;
+    }
+    """
+    
+    def compose(self) -> ComposeResult:
+        with Container():
+            yield DataTable()
+            with Horizontal():
+                yield Button("Go back", id="back", variant="success")
+                yield Button("Refresh Table", id="refresh", variant="warning")
+                yield Button("Clear queue", id="clear", variant="error")
+                
+    def _on_mount(self) -> None:
+        table = self.query_one(DataTable)
+        table.clear()
+        table.add_columns("Title", "Artist","Album", Text("Track Length", justify='right'))
+        table.fixed_columns = 1
+        table.cursor_type = "row"
+        table.zebra_stripes = True
+        self.fill_table()
+
+    def fill_table(self) -> None:
+        table = self.query_one(DataTable)
+        table.clear()
+        for number, song in enumerate(queue.songList, start=1):
+            label = Text(str(number))
+            table.add_row(song.return_title(), song.return_artist(), song.return_album(), Text(str(song.convert_time()), justify="right"), label=label)
+
+    @on(Button.Pressed, "#back")
+    def go_back(self) -> None:
+        self.app.pop_screen()
+
+    @on(Button.Pressed, "#clear")
+    def clear_table(self) -> None:
+        queue.clear_list()
+        self.fill_table()
+
+    @on(Button.Pressed, "#refresh")
+    def refresh_table(self) -> None:
+        self.fill_table()
+
 class SongTable(DataTable):
     
     DEFAULT_CSS = "DataTable {height: 1fr}"
@@ -256,12 +320,13 @@ class SongTable(DataTable):
 class MyPyPlayer(App):
     """a Textual app to play music."""
 
-    SCREENS = {"about": AboutScreen(), "help": HelpScreen()}
+    SCREENS = {"about": AboutScreen(), "help": HelpScreen(), "queue": QueueScreen()}
     BINDINGS = [
         Binding("a", "push_screen('about')", "About The Player"), 
         Binding("h", "push_screen('help')", "Help"), 
         Binding("space", "play_resume", "Pause/Resume"),
-        Binding("r", "refresh", "Refresh Music Directory")
+        Binding("r", "refresh", "Refresh Music Directory"),
+        Binding("q", "push_screen('queue')", "Show Queue")
         ]
 
     def compose(self) -> ComposeResult:
