@@ -7,6 +7,7 @@ import os
 class Player:
     def __init__(self):
         mixer.init()
+        self.songFile = None
         self.isPaused = False
         self.isPlaying = False
         self.songName = None
@@ -19,6 +20,7 @@ class Player:
 
     def play_song(self, song):
         if os.path.isfile(song.path):
+            self.songFile = song
             self.songName = song.title
             self.songLength = song.length
             self.songArtist = song.artist
@@ -39,6 +41,9 @@ class Player:
             return 0
         else:
             return self.songLength*1000
+        
+    def return_song(self):
+        return self.songFile
     
     """not the most precise but works fine"""
     def return_moment(self):
@@ -71,6 +76,7 @@ class Player:
         if mixer.music.get_busy() and not self.isPaused:
             self.isPlaying = True
         elif not mixer.music.get_busy() and not self.isPaused:
+            self.songFile = None
             self.isPlaying = False
             self.songName = None
             self.songLength = 0
