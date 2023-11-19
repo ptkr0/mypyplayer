@@ -1,19 +1,17 @@
 from model import *
 from player import *
-from pathlib import Path
-from typing import Iterable
 from rich.text import Text
 
 from textual import on
 from textual.app import App, ComposeResult
-from textual.widgets import Header, Footer, Static, DataTable, Input, Label, DirectoryTree, Button, ProgressBar
-from textual.screen import Screen, ModalScreen
-from textual.containers import Container, Horizontal, Center, Middle
+from textual.widgets import Header, Footer, DataTable, Label, Button, ProgressBar
+from textual.screen import ModalScreen
+from textual.containers import Container, Horizontal, Center
 from textual.binding import Binding
 from textual.widget import Widget
 from textual_slider import Slider
 
-ABOUT_TEXT = """     
+ABOUT_TEXT = r"""     
 MyPyPlayer is a simple music player written in Python with the use of:
 - pygame for playing music
 - eyed3 for getting metadata from tracks
@@ -31,7 +29,7 @@ Currently MyPyPlayer is a WIP. Hopefully one day I'll make it usable
                         Powered by MyPHPoL 2023
 """
 
-HELP_TEXT = """
+HELP_TEXT = r"""
 Welcome to MyPyPlayer - a simple music player written in Python
 Use your mouse or keyboard to navigate through the menus
 (mouse is more convenient, but it may cause problems)
@@ -85,6 +83,50 @@ class AboutScreen(ModalScreen):
     def back_to_app(self) -> None:
         self.app.pop_screen()
 
+class ExitScreen(ModalScreen):
+
+    DEFAULT_CSS = """
+    ExitScreen {
+        align: center middle;
+    }
+
+    ExitScreen > Container {
+        width: auto;
+        height: auto;
+    }
+
+    ExitScreen > Container > Label {
+        margin: 1 3;
+    }
+
+    ExitScreen > Container > Horizontal {
+        width: auto;
+        height: auto;
+    }
+
+    ExitScreen > Container > Horizontal > Button {
+        margin: 2 4;
+    }
+    """
+    
+    def compose(self) -> ComposeResult:
+         with Container():
+            yield Label("Are you sure you want to quit?")
+            with Horizontal():
+                yield Button("Quit", variant="error", id="quit")
+                yield Button("Cancel", variant="primary", id="cancel")
+
+    @on(Button.Pressed, "#cancel")
+    def back_to_app(self) -> None:
+        self.app.pop_screen()
+
+    @on(Button.Pressed, "#quit")
+    def save_and_exit(self) -> None:
+        save_to_yaml(player.volume)
+        songToSave = player.return_song()
+        save_to_yaml2(queue, songToSave)
+        self.app.exit()
+
 class HelpScreen(ModalScreen):
 
     DEFAULT_CSS = """
@@ -129,11 +171,11 @@ class SongProgressBar(ProgressBar):
                     yield ProgressBar(show_eta=False, show_percentage=False)
 
     def _on_mount(self) -> None:
-        self.monitor_progress = self.set_interval(0.01, self.monitor_track_progress, pause=False)
+        self.monitor_progress = self.set_interval(0.1, self.monitor_track_progress, pause=False)
 
     def monitor_track_progress(self) -> None:
         if player.isPlaying:
-            self.query_one(ProgressBar).update(total=player.return_length(), progress=player.return_moment())
+            self.query_one(ProgressBar).update(total=player.return_length()/10, progress=player.return_moment())
         else:
             self.query_one(ProgressBar).update(total=None)
 
@@ -216,16 +258,15 @@ class SongInfo(Label):
             self.label.update("No song playing at the moment!")
             player.check_if_playing()
         elif player.isPlaying:
-            self.label.update(str(player))
+            self.label.update('🎵 ' + str(player))
             player.check_if_playing()
 
-class QueueScreen(Screen):
+class QueueScreen(ModalScreen):
 
     DEFAULT_CSS = """
 
     DataTable {
         height: 1fr;
-        width: 80fr;
     }
 
     QueueScreen {
@@ -256,7 +297,7 @@ class QueueScreen(Screen):
                 yield Button("Go back", id="back", variant="success")
                 yield Button("Refresh Table", id="refresh", variant="warning")
                 yield Button("Clear queue", id="clear", variant="error")
-                
+
     def _on_mount(self) -> None:
         table = self.query_one(DataTable)
         table.clear()
@@ -306,7 +347,7 @@ class SongTable(DataTable):
         table.clear()
         for number, song in enumerate(allSongs.songList, start=1):
             label = Text(str(number))
-            table.add_row(song.return_title(), song.return_artist(), song.return_album(), Text(str(song.convert_time()), justify="right"), label=label, key=song)
+            table.add_row(Text(str(song.return_title()), style="#f7eeed"), song.return_artist(), song.return_album(), Text(str(song.convert_time()), style="#f7eeed", justify="right"), label=label, key=song)
 
     """handler for selecting a row in the data table."""
     def on_data_table_row_selected(self, event: DataTable.RowSelected) -> None:
@@ -320,13 +361,14 @@ class SongTable(DataTable):
 class MyPyPlayer(App):
     """a Textual app to play music."""
 
-    SCREENS = {"about": AboutScreen(), "help": HelpScreen(), "queue": QueueScreen()}
+    SCREENS = {"about": AboutScreen(), "help": HelpScreen(), "queue": QueueScreen(), "exit": ExitScreen()}
     BINDINGS = [
         Binding("a", "push_screen('about')", "About The Player"), 
         Binding("h", "push_screen('help')", "Help"), 
         Binding("space", "play_resume", "Pause/Resume"),
         Binding("r", "refresh", "Refresh Music Directory"),
-        Binding("q", "push_screen('queue')", "Show Queue")
+        Binding("q", "push_screen('queue')", "Show Queue"),
+        Binding("e", "push_screen('exit')", "Exit Program")
         ]
 
     def compose(self) -> ComposeResult:
@@ -356,5 +398,8 @@ class MyPyPlayer(App):
 
 if __name__ == "__main__":
     prepare_all_songs()
+    oldVolume = load_from_yaml()
+    init_file(queue, allSongs)
+    player.change_volume(oldVolume)
     app = MyPyPlayer()
     app.run()

@@ -4,7 +4,7 @@ from player import *
 path = r'C:\Users\Piotr\Desktop\mypyplayer'
 
 allPlaylists = []
-queue = Playlist("Queue")
+queue = Songlist("Queue")
 allSongs = Songlist("All Songs")
 scan_folder(path, allSongs)
 print(allSongs)
