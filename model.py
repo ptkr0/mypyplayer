@@ -2,7 +2,6 @@ import os
 import eyed3
 from datetime import timedelta
 import yaml
-from player import *
 
 class Song:
     def __init__(self, title, artist, length, path, album):
@@ -13,22 +12,22 @@ class Song:
         self.album = album
 
     def __str__(self):
-        return f"{self.title:<50} {self.artist:<50} {self.convert_time()}"
+        return f'{self.title:<50} {self.artist:<50} {self.convert_time()}'
     
     def __repr__(self):
-        return f"Song({self.title}, {self.artist}, {self.length}, {self.path}, {self.album})"
+        return f'Song({self.title}, {self.artist}, {self.length}, {self.path}, {self.album})'
     
     def convert_time(self):
         return timedelta(seconds=self.length)
     
     def return_title(self):
-        return f"{self.title:<25}"
+        return f'{self.title:<25}'
     
     def return_artist(self):
-        return f"{self.artist:<25}"
+        return f'{self.artist:<25}'
     
     def return_album(self):
-        return f"{self.album:<25}"
+        return f'{self.album:<25}'
     
     def is_equal(self, other):
         return self.title == other.title and self.artist == other.artist and self.length == other.length and self.album == other.album
@@ -44,7 +43,7 @@ class Songlist:
     def __str__(self):
         result = f'{self.name}\n'
         for i, song in enumerate(self.songList, start=0):
-            result += f"{i:<3} {song}\n"
+            result += f'{i:<3} {song}\n'
         return result
     
     def clear_list(self):
@@ -63,12 +62,12 @@ class Songlist:
         
 def scan_folder(path, songList):
     for file in os.listdir(path):
-        if file.endswith(".mp3"):
+        if file.endswith('.mp3'):
             filePath = os.path.join(path, file)
-            eyed3.log.setLevel("ERROR")
+            eyed3.log.setLevel('ERROR')
             audio = eyed3.load(filePath)
             if(audio.tag.artist == None):
-                artist = "unknown"
+                artist = 'unknown'
             else:
                 artist = audio.tag.artist
             if(audio.tag.title == None):
@@ -76,7 +75,7 @@ def scan_folder(path, songList):
             else:
                 title = audio.tag.title
             if(audio.tag.album == None):
-                album = " "
+                album = ' '
             else:
                 album = audio.tag.album
             length = audio.info.time_secs
@@ -84,25 +83,25 @@ def scan_folder(path, songList):
             songList.add_song(song)
 
 def save_to_yaml(volume):
-    with open('session.yml', 'w', encoding="utf-8") as yaml_file:
+    with open('session.yml', 'w', encoding='utf-8') as yaml_file:
         yaml.dump(volume, yaml_file, default_flow_style=False, allow_unicode=True)
 
 def load_from_yaml():
     if os.stat('session.yml').st_size != 0:   
-        with open('session.yml', 'r', encoding="utf-8") as yaml_file:
+        with open('session.yml', 'r', encoding='utf-8') as yaml_file:
             volume = yaml.safe_load(yaml_file)
             return volume
     return 0.5
 
 def save_to_yaml2(queue, currSong):
-    with open('songs.yml', "w", encoding="utf-8") as yaml_file:
+    with open('songs.yml', 'w', encoding='utf-8') as yaml_file:
         if currSong != None:
             queue.add_song_to_start(currSong)
         yaml.dump([vars(song) for song in queue.songList], yaml_file, default_flow_style=False, allow_unicode=True)
 
 def init_file(queue, allsongs):
     if os.stat('songs.yml').st_size != 0:
-        with open("songs.yml", "r", encoding="utf-8") as yaml_file:
+        with open('songs.yml', 'r', encoding='utf-8') as yaml_file:
             loaded_data = yaml.safe_load(yaml_file)
             for song_data in loaded_data:
                 song = Song(**song_data)
