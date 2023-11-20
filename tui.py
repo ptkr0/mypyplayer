@@ -13,9 +13,11 @@ from textual_slider import Slider
 
 ABOUT_TEXT = r"""     
 MyPyPlayer is a simple music player written in Python with the use of:
-- pygame for playing music
+- Pygame for playing music
 - eyed3 for getting metadata from tracks
-- textual for better UI
+- Textual for better UI
+- Textual Slider for that fancy slider ( •̀ ω •́ )✧
+- PyYAML for easy save/reload feature
 Currently MyPyPlayer is a WIP. Hopefully one day I'll make it usable
 
                             _         _
@@ -35,6 +37,7 @@ Use your mouse or keyboard to navigate through the menus
 (mouse is more convenient, but it may cause problems)
 If you don't see your music remember to put it in 'mymusic' directory in the program files
 After that press 'R' to refresh table
+Remember to exit program by clicking 'E' to save your current session
 """
 
 musicDirPath = r'.\mymusic'
@@ -175,7 +178,7 @@ class SongProgressBar(ProgressBar):
 
     def monitor_track_progress(self) -> None:
         if player.isPlaying:
-            self.query_one(ProgressBar).update(total=player.return_length()/10, progress=player.return_moment())
+            self.query_one(ProgressBar).update(total=player.return_length(), progress=player.return_moment())
         else:
             self.query_one(ProgressBar).update(total=None)
 
@@ -203,21 +206,21 @@ class Controller(Widget):
     """
 
     def compose(self) -> ComposeResult:
+        with Center():
+                yield SongProgressBar()
+        with Horizontal():
             with Center():
-                    yield SongProgressBar()
-            with Horizontal():
-                with Center():
-                    yield Button("||◁", id="toStart")
-                with Center():
-                    yield Button("<-5s", id="minusFive")
-                with Center():
-                    yield Button("❚❚", id="pauseResume")
-                with Center():
-                    yield Button("+5s>", id="plusFive")
-                with Center():
-                    yield Button("▷||", id="toEnd")
-                with Center():
-                    yield Slider(min=0, max=100, step=1, value=int(player.volume*100), id="volumeSlider")
+                yield Button("||◁", id="toStart")
+            with Center():
+                yield Button("<-5s", id="minusFive")
+            with Center():
+                yield Button("❚❚", id="pauseResume")
+            with Center():
+                yield Button("+5s>", id="plusFive")
+            with Center():
+                yield Button("▷||", id="toEnd")
+            with Center():
+                yield Slider(min=0, max=100, step=1, value=int(player.volume*100), id="volumeSlider")
 
     @on(Button.Pressed, "#pauseResume")
     def pause_resume(self) -> None:

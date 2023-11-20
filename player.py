@@ -34,23 +34,22 @@ class Player:
         if self.isPlaying == False and self.isPaused == False:
             return f"No song is currently playing!"
         else:
-            return f"{self.songName} by: {self.songArtist} {timedelta(seconds = round(self.elapsed_time+mixer.music.get_pos()/1000))}/{timedelta(seconds=self.songLength)} {self.elapsed_time}"
+            return f"{self.songName} by: {self.songArtist} {timedelta(seconds = round(self.elapsed_time+(mixer.music.get_pos()/1000)))}/{timedelta(seconds=self.songLength)}"
         
     def return_length(self):
         if not self.isPlaying:
             return 0
         else:
-            return self.songLength*1000
+            return self.songLength
         
     def return_song(self):
         return self.songFile
     
-    """not the most precise but works fine"""
     def return_moment(self):
         if not self.isPlaying:
             return 0
         else:
-            return round(self.elapsed_time*100+(mixer.music.get_pos())/10)
+            return self.elapsed_time+float(mixer.music.get_pos()/1000)
 
     def pause_resume_song(self):
         if not self.isPaused:
@@ -83,21 +82,16 @@ class Player:
             self.elapsed_time = 0
             mixer.music.unload()
 
-    """get_pos is really hard to work with and this function definetely doesn't work right all the time"""
     def skip_to(self, number):
         if self.isPlaying:
-            currentSongMoment = (mixer.music.get_pos())+(self.elapsed_time*1000)
-            self.elapsed_time += (number)
-            if mixer.music.get_pos() + self.elapsed_time*1000 < 0:
+            currentSongMoment = self.return_moment()
+            self.elapsed_time = self.elapsed_time + number
+            if currentSongMoment + self.elapsed_time < 0:
                 self.rewind_to_start()
             else:
-                currentSongMoment = float((currentSongMoment+(number*1000))/1000)
+                currentSongMoment = currentSongMoment+number
                 mixer.music.rewind()
-                mixer.music.play(0, currentSongMoment)
-
-    """not used with the current queue controller"""
-    def play_next(self, song):
-        mixer.music.queue(song.path)
+                mixer.music.set_pos(currentSongMoment)
 
     """get_pos won't update if you rewind the music, since it shows time elapsed since play has started. this should work for now"""
     def rewind_to_start(self):
