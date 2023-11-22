@@ -16,9 +16,8 @@ MyPyPlayer is a simple music player written in Python with the use of:
 - Pygame for playing music
 - eyed3 for getting metadata from tracks
 - Textual for better UI
-- Textual Slider for that fancy slider ( •̀ ω •́ )✧
+- Textual Slider for that fancy slider (✿ ◡ ‿ ◡ )
 - PyYAML for easy save/reload feature
-Currently MyPyPlayer is a WIP. Hopefully one day I'll make it usable
 
                             _         _
                 __   ___.--'_`.     .'_`--.___   __
@@ -300,6 +299,7 @@ class QueueScreen(ModalScreen):
                 yield Button("Go back", id="back", variant="success")
                 yield Button("Refresh Table", id="refresh", variant="warning")
                 yield Button("Clear queue", id="clear", variant="error")
+                yield Button("Shuffle queue", id="shuffle", variant="primary")
 
     def _on_mount(self) -> None:
         table = self.query_one(DataTable)
@@ -328,6 +328,11 @@ class QueueScreen(ModalScreen):
 
     @on(Button.Pressed, "#refresh")
     def refresh_table(self) -> None:
+        self.fill_table()
+
+    @on(Button.Pressed, "#shuffle")
+    def shuffle_table(self) -> None:
+        queue.shuffle()
         self.fill_table()
 
 class SongTable(DataTable):

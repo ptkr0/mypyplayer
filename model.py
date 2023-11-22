@@ -2,6 +2,7 @@ import os
 import eyed3
 from datetime import timedelta
 import yaml
+import random
 
 class Song:
     def __init__(self, title, artist, length, path, album):
@@ -56,6 +57,9 @@ class Songlist:
         if len(self.songList):
             return False
         return True
+    
+    def shuffle(self):
+        random.shuffle(self.songList)
 
     def add_song_to_start(self, song):
         self.songList.insert(0, song)

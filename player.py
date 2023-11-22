@@ -88,6 +88,8 @@ class Player:
             self.elapsed_time = self.elapsed_time + number
             if currentSongMoment + self.elapsed_time < 0:
                 self.rewind_to_start()
+            if currentSongMoment + number > self.songLength:
+                self.skip_to_end()
             else:
                 currentSongMoment = currentSongMoment+number
                 mixer.music.rewind()
