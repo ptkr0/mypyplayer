@@ -71,15 +71,15 @@ def scan_folder(path, songList):
             filePath = os.path.join(path, file)
             eyed3.log.setLevel('ERROR')
             audio = eyed3.load(filePath)
-            if(audio.tag.artist == None):
+            if(audio.tag.artist is None):
                 artist = 'unknown'
             else:
                 artist = audio.tag.artist
-            if(audio.tag.title == None):
+            if(audio.tag.title is None):
                 title = file
             else:
                 title = audio.tag.title
-            if(audio.tag.album == None):
+            if(audio.tag.album is None):
                 album = ' '
             else:
                 album = audio.tag.album
