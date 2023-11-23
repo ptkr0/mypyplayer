@@ -315,7 +315,7 @@ class QueueScreen(ModalScreen):
         table.clear()
         for number, song in enumerate(queue.songList, start=1):
             label = Text(str(number))
-            table.add_row(song.return_title(), song.return_artist(), song.return_album(), Text(str(song.convert_time()), justify="right"), label=label)
+            table.add_row(Text(str(song.return_title())), Text(str(song.return_artist())), Text(str(song.return_album())), Text(str(song.convert_time()), justify="right"), label=label)
 
     @on(Button.Pressed, "#back")
     def go_back(self) -> None:
@@ -365,7 +365,7 @@ class SongTable(DataTable):
         else:
             player.play_song(event.row_key.value)
             self.notify("Started playing: "+event.row_key.value.title)
-        
+    
 class MyPyPlayer(App):
     """a Textual app to play music."""
 
