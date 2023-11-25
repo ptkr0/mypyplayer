@@ -6,13 +6,11 @@ root = tk.Tk()
 
 """
 Used color pallets
-
 backgroud - #26292b
 menu buttons - #0e66b2
 song backgrounds - #0b3d63
 TBA - #1c1c1c
 selected song - #e0bb84
-
 """
 
 root.rowconfigure(0, weight=1)
