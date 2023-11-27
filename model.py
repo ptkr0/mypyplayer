@@ -71,15 +71,15 @@ def scan_folder(path, songList):
             filePath = os.path.join(path, file)
             eyed3.log.setLevel('ERROR')
             audio = eyed3.load(filePath)
-            if(audio.tag.artist == None):
+            if(audio.tag.artist is None):
                 artist = 'unknown'
             else:
                 artist = audio.tag.artist
-            if(audio.tag.title == None):
+            if(audio.tag.title is None):
                 title = file
             else:
                 title = audio.tag.title
-            if(audio.tag.album == None):
+            if(audio.tag.album is None):
                 album = ' '
             else:
                 album = audio.tag.album
@@ -92,7 +92,7 @@ def save_to_yaml(volume):
         yaml.dump(volume, yaml_file, default_flow_style=False, allow_unicode=True)
 
 def load_from_yaml():
-    if os.stat('session.yml').st_size != 0:   
+    if os.path.isfile('session.yml') and os.stat('session.yml').st_size != 0:   
         with open('session.yml', 'r', encoding='utf-8') as yaml_file:
             volume = yaml.safe_load(yaml_file)
             return volume
@@ -105,7 +105,7 @@ def save_to_yaml2(queue, currSong):
         yaml.dump([vars(song) for song in queue.songList], yaml_file, default_flow_style=False, allow_unicode=True)
 
 def init_file(queue, allsongs):
-    if os.stat('songs.yml').st_size != 0:
+    if os.path.isfile('songs.yml') and os.stat('songs.yml').st_size != 0:
         with open('songs.yml', 'r', encoding='utf-8') as yaml_file:
             loaded_data = yaml.safe_load(yaml_file)
             for song_data in loaded_data:
