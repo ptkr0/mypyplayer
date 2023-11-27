@@ -11,6 +11,7 @@ from textual.binding import Binding
 from textual.widget import Widget
 from textual_slider import Slider
 
+"""Should appear in GUI version as a popup dialog aswell"""
 ABOUT_TEXT = r"""     
 MyPyPlayer is a simple music player written in Python with the use of:
 - Pygame for playing music
@@ -30,6 +31,7 @@ MyPyPlayer is a simple music player written in Python with the use of:
                         Powered by MyPHPoL 2023
 """
 
+"""Should appear in GUI version as a popup dialog aswell"""
 HELP_TEXT = r"""
 Welcome to MyPyPlayer - a simple music player written in Python
 Use your mouse or keyboard to navigate through the menus
@@ -39,16 +41,18 @@ After that press 'R' to refresh table
 Remember to exit program by clicking 'E' to save your current session
 """
 
-musicDirPath = r'.\mymusic'
-allSongs = Songlist("All Songs")
-queue = Songlist("Queue")
+musicDirPath = r'.\mymusic' #path to the directory with user's music
+allSongs = Songlist("All Songs") #stores all songs found in musicDirPath dir
+queue = Songlist("Queue") #stores songs that will play next
 
+"""if user adds/removes songs from their dir they should be able to use this function to refresh allSongs"""
 def prepare_all_songs():
     allSongs.clear_list()
     scan_folder(musicDirPath, allSongs)
 
-player = Player()
+player = Player() #initializes player.py class 
 
+"""displays ABOUT_TEXT"""
 class AboutScreen(ModalScreen):
 
     DEFAULT_CSS = """
@@ -85,6 +89,7 @@ class AboutScreen(ModalScreen):
     def back_to_app(self) -> None:
         self.app.pop_screen()
 
+"""displays a popup asking user if he wants to quit"""
 class ExitScreen(ModalScreen):
 
     DEFAULT_CSS = """
@@ -122,6 +127,7 @@ class ExitScreen(ModalScreen):
     def back_to_app(self) -> None:
         self.app.pop_screen()
 
+    """if user wants to quit in the "safe" way we need to save current volume and current song + queue to .yml file"""
     @on(Button.Pressed, "#quit")
     def save_and_exit(self) -> None:
         save_to_yaml(player.volume)
@@ -129,6 +135,7 @@ class ExitScreen(ModalScreen):
         save_to_yaml2(queue, songToSave)
         self.app.exit()
 
+"""displays HELP_TEXT"""
 class HelpScreen(ModalScreen):
 
     DEFAULT_CSS = """
@@ -172,15 +179,19 @@ class SongProgressBar(ProgressBar):
                 with Center():
                     yield ProgressBar(show_eta=False, show_percentage=False)
 
+    """self.monitor_progress acts as a clock"""
     def _on_mount(self) -> None:
         self.monitor_progress = self.set_interval(0.1, self.monitor_track_progress, pause=False)
 
+    """every clock tick we check if song is playing. if it is then we update progressbar: current song moment/total song length..."""
+    """...if it doesn't play then total=None will trigger fancy textual idle animation"""
     def monitor_track_progress(self) -> None:
         if player.isPlaying:
             self.query_one(ProgressBar).update(total=player.return_length(), progress=player.return_moment())
         else:
             self.query_one(ProgressBar).update(total=None)
 
+"""this widget consists of several buttons, slider and progressbar"""
 class Controller(Widget):
 
     DEFAULT_CSS = """
@@ -219,7 +230,7 @@ class Controller(Widget):
             with Center():
                 yield Button("▷||", id="toEnd")
             with Center():
-                yield Slider(min=0, max=100, step=1, value=int(player.volume*100), id="volumeSlider")
+                yield Slider(min=0, max=100, step=1, value=int(player.volume*100), id="volumeSlider") #value is taken from player and multiplied by 100. why? see below
 
     @on(Button.Pressed, "#pauseResume")
     def pause_resume(self) -> None:
@@ -240,21 +251,25 @@ class Controller(Widget):
     @on(Button.Pressed, "#toEnd")
     def to_end(self) -> None:
         player.skip_to_end()
-
+ 
+    """volume slider takes int in range 0 to 100, player.change_volume takes float in range 0 to 1.0. we do simple conversion"""
     @on(Slider.Changed, "#volumeSlider")
     def on_slider_changed_slider(self, event: Slider.Changed) -> None:
         value = float(event.value/100)
         player.change_volume(value)
 
+"""a simple label that shows track info"""
 class SongInfo(Label):
 
     label = Label()
     def compose(self) -> ComposeResult:
         yield self.label
 
+    """self.monitor_progress acts as a clock"""
     def _on_mount(self) -> None:
         self.monitor_progress = self.set_interval(0.1, self.monitor_track_progress, pause=False)
 
+    """similiar to how the progressbar works."""
     def monitor_track_progress(self):
         if not player.isPlaying:
             self.label.update("No song playing at the moment!")
@@ -263,6 +278,7 @@ class SongInfo(Label):
             self.label.update('🎵 ' + str(player))
             player.check_if_playing()
 
+"""popup screen with current queue.songList"""
 class QueueScreen(ModalScreen):
 
     DEFAULT_CSS = """
@@ -310,9 +326,10 @@ class QueueScreen(ModalScreen):
         table.zebra_stripes = True
         self.fill_table()
 
+    """fill table as a different function lets us trigger it via button press"""
     def fill_table(self) -> None:
         table = self.query_one(DataTable)
-        table.clear()
+        table.clear() #clear old table in case there are old tracks
         for number, song in enumerate(queue.songList, start=1):
             label = Text(str(number))
             table.add_row(Text(str(song.return_title())), Text(str(song.return_artist())), Text(str(song.return_album())), Text(str(song.convert_time()), justify="right"), label=label)
@@ -355,7 +372,7 @@ class SongTable(DataTable):
         table.clear()
         for number, song in enumerate(allSongs.songList, start=1):
             label = Text(str(number))
-            table.add_row(Text(str(song.return_title()), style="#f7eeed"), song.return_artist(), song.return_album(), Text(str(song.convert_time()), style="#f7eeed", justify="right"), label=label, key=song)
+            table.add_row(Text(str(song.return_title()), style="#f7eeed"), song.return_artist(), song.return_album(), Text(str(song.convert_time()), style="#f7eeed", justify="right"), label=label, key=song) #song is a key since player.play_song() takes song as an argument, duh...
 
     """handler for selecting a row in the data table."""
     def on_data_table_row_selected(self, event: DataTable.RowSelected) -> None:
@@ -386,6 +403,7 @@ class MyPyPlayer(App):
         yield SongInfo()
         yield Controller()
 
+    """self.monitor_progress acts as a clock"""
     def _on_mount(self) -> None:
         self.query_one(SongTable).fill_table()
         self.monitor_progress = self.set_interval(0.1, self.monitor_track_progress, pause=False)
@@ -406,8 +424,8 @@ class MyPyPlayer(App):
 
 if __name__ == "__main__":
     prepare_all_songs()
-    oldVolume = load_from_yaml()
-    init_file(queue, allSongs)
-    player.change_volume(oldVolume)
+    oldVolume = load_from_yaml() #init saved volume from .yml file
+    init_file(queue, allSongs) #init saved curr song + queue from .yml file
+    player.change_volume(oldVolume) #change volume in the player
     app = MyPyPlayer()
     app.run()

@@ -4,7 +4,6 @@ from datetime import timedelta
 import yaml
 import random
 
-# chuj
 class Song:
     def __init__(self, title, artist, length, path, album):
         self.title = title
@@ -31,6 +30,7 @@ class Song:
     def return_album(self):
         return f'{self.album:<25}'
     
+    """used when initing saved queue"""
     def is_equal(self, other):
         return self.title == other.title and self.artist == other.artist and self.length == other.length and self.album == other.album
 
@@ -62,15 +62,18 @@ class Songlist:
     def shuffle(self):
         random.shuffle(self.songList)
 
+    """atm used only when initing saved queue"""
     def add_song_to_start(self, song):
         self.songList.insert(0, song)
-        
+
+"""eyed3 seems pretty shitty coz some files might straight up just not work xd. todo: fix it or change lib"""
 def scan_folder(path, songList):
     for file in os.listdir(path):
         if file.endswith('.mp3'):
             filePath = os.path.join(path, file)
-            eyed3.log.setLevel('ERROR')
             audio = eyed3.load(filePath)
+            if not audio:
+                pass
             if(audio.tag.artist is None):
                 artist = 'unknown'
             else:
@@ -87,10 +90,12 @@ def scan_folder(path, songList):
             song = Song(title, artist, length, filePath, album)
             songList.add_song(song)
 
+"""saves volume"""
 def save_to_yaml(volume):
     with open('session.yml', 'w', encoding='utf-8') as yaml_file:
         yaml.dump(volume, yaml_file, default_flow_style=False, allow_unicode=True)
 
+"""loads saved volume"""
 def load_from_yaml():
     if os.path.isfile('session.yml') and os.stat('session.yml').st_size != 0:   
         with open('session.yml', 'r', encoding='utf-8') as yaml_file:
@@ -98,12 +103,14 @@ def load_from_yaml():
             return volume
     return 0.5
 
+"""saves curr song + queue"""
 def save_to_yaml2(queue, currSong):
     with open('songs.yml', 'w', encoding='utf-8') as yaml_file:
         if currSong != None:
             queue.add_song_to_start(currSong)
         yaml.dump([vars(song) for song in queue.songList], yaml_file, default_flow_style=False, allow_unicode=True)
 
+"""loads saved queue"""
 def init_file(queue, allsongs):
     if os.path.isfile('songs.yml') and os.stat('songs.yml').st_size != 0:
         with open('songs.yml', 'r', encoding='utf-8') as yaml_file:
