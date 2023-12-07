@@ -1,84 +1,63 @@
-from model import *
-from player import *
-
 import tkinter as tk
 from tkinter import ttk
+from tkinter.messagebox import showinfo
 
-root = tk.Tk()
-
-"""
-Used color pallets
-
-backgroud - #26292b
-menu buttons - #0e66b2
-song backgrounds - #0b3d63
-TBA - #1c1c1c
-selected song - #e0bb84
-
-"""
+from model import *
+from player import *
 
 musicDirPath = r'.\mymusic'
 allSongs = Songlist("All Songs")
 queue = Songlist("Queue")
 
+player = Player() #initializes player.py class 
+
 def prepare_all_songs():
     allSongs.clear_list()
     scan_folder(musicDirPath, allSongs)
 
-def play_songs_now():
-    print("test")
+# for testing purposes
+def button_clicked(test):
+    print(test)
+
+# we take index number of the song user clicked and we play it
+# needs to be changed
+def play_song(event):
+    selected_iid = songTable.focus()
+    
+    item_index = songTable.index(selected_iid)
+    player.play_song(allSongs.songList[item_index])
 
 prepare_all_songs()
 
-root.rowconfigure(0, weight=1)
-root.columnconfigure(0, weight=1)
-height = 1000
-width = 1600
-x = (root.winfo_screenwidth()//2)-(width//2)
-y = (root.winfo_screenheight()//4)-(height//4)
-root.geometry('{}x{}+{}+{}'.format(width, height, x, y))
+# root - main app window
+root = tk.Tk()
+root.title('MyPyPlayer')
+root.geometry('1280x720+50+50')
+root.resizable(False, False) # for now
 
-window = tk.Frame(root) # Song list + buttons
-window2 = tk.Frame(root) # TBA
+columns = ("title", "artist","album","len") # titles for the columns
+songTable = ttk.Treeview(root, columns=columns, show='headings') # Song list
 
-for frame in (window, window2):
-    frame.grid(row=0, column=0, sticky='nsew')
+songTable.heading("title", text="Title")
+songTable.column("title", minwidth=250, width=250, stretch=0)
+songTable.heading("artist", text="Artist")
+songTable.column("artist", minwidth=250, width=250, stretch=0)
+songTable.heading("album", text="Album")
+songTable.column("album", minwidth=250, width=250, stretch=0)
+songTable.heading("len", text="Track Length", anchor="e")
+songTable.column("len", minwidth=100, width=100, stretch=0, anchor="e")
 
-window.config(background="#26292b")
-
-test = tk.Label(
-    window,
-    text=f"{allSongs.songList[0]}",
-    bg="#26292b",
-    fg="#FFFFFF"
-)
-
-#test.grid(row=2, column=1)
-
-columns = ("Title", "Artist","Album","Length") # titles for the columns
-
-tree = ttk.Treeview(window, columns=columns, show='headings') # Song list
-
-# tree.heading("Nr.", text="Nr.")
-tree.heading("Title", text="Title")
-tree.heading("Artist", text="Artist")
-tree.heading("Album", text="Album")
-tree.heading("Length", text="Track Length")
-
+# filling table with music
+# index number still to be added
 for nr, song in enumerate(allSongs.songList, start=1):
-    tree.insert('', tk.END, values=(song.return_title(), song.return_artist(), song.return_album(), str(song.convert_time()))) # inserts songs into the tree view.
+    songTable.insert('', tk.END, values=(song.return_title(), song.return_artist(), song.return_album(), str(song.convert_time()))) # inserts songs into the tree view.
 
-tree.grid(row=1, column=1)
+songTable.bind('<<TreeviewSelect>>', play_song) # binding function to selecting item from the table
+songTable.pack()
 
-tree.bind('<ButtonRelease-1>', play_songs_now()) # why it broken T^T
-
-def show_frame(frame):
-    frame.tkraise()
-
-show_frame(window)
-
-root.resizable(False, False)
-root.title("MyPyPlayer")
-
-if __name__ == "__main__":
+# fix for blurry UI
+try:
+    from ctypes import windll
+    windll.shcore.SetProcessDpiAwareness(1)
+finally:
     root.mainloop()
