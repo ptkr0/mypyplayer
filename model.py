@@ -72,6 +72,7 @@ def scan_folder(path, songList):
         if file.endswith('.mp3'):
             filePath = os.path.join(path, file)
             audio = eyed3.load(filePath)
+            eyed3.log.setLevel("ERROR")
             if not audio:
                 pass
             if(audio.tag.artist is None):
