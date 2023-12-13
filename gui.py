@@ -27,8 +27,6 @@ def play_song(event):
     item_index = songTable.index(selected_iid)
     player.play_song(allSongs.songList[item_index])
 
-prepare_all_songs()
-
 # root - main app window
 root = tk.Tk()
 root.title('MyPyPlayer')
@@ -49,11 +47,17 @@ songTable.column("len", minwidth=100, width=100, stretch=0, anchor="e")
 
 # filling table with music
 # index number still to be added
-for nr, song in enumerate(allSongs.songList, start=1):
-    songTable.insert('', tk.END, values=(song.return_title(), song.return_artist(), song.return_album(), str(song.convert_time()))) # inserts songs into the tree view.
+def populate_table(event):
+    prepare_all_songs() # run method that clears songList and fills it again
+    songTable.delete(*songTable.get_children()) # clear table if it was filled before
+    for nr, song in enumerate(allSongs.songList, start=1):
+        songTable.insert('', tk.END, values=(song.return_title(), song.return_artist(), song.return_album(), str(song.convert_time()))) # inserts songs into the tree view.
+    
+populate_table('event')
 
 songTable.bind('<<TreeviewSelect>>', play_song) # binding function to selecting item from the table
 songTable.pack()
+root.bind('<KeyPress-r>',populate_table)
 
 # fix for blurry UI
 try:
