@@ -1,6 +1,6 @@
 ﻿# MyPyPlayer
 
-> Simple music player written in *Python*
+> Simple music player written in Python
 
 ## Features:
 
@@ -14,10 +14,12 @@
 ## Made with:
 
 - Pygame
-- Textual
 - eyed3
 - PyYAML
-- Textual Slider
+- Textual (only in TUI version)
+- Textual Slider (only in TUI version)
+- tkinter.ttk (only in GUI version)
+- CustomTkinter (only in GUI version)
 
 ## Installation
 

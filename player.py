@@ -86,9 +86,9 @@ class Player:
         if self.isPlaying:
             currentSongMoment = self.return_moment()
             self.elapsed_time = self.elapsed_time + number
-            if currentSongMoment + self.elapsed_time < 0:
+            if currentSongMoment + self.elapsed_time <= 0:
                 self.rewind_to_start()
-            if currentSongMoment + number > self.songLength:
+            elif currentSongMoment + number > self.songLength:
                 self.skip_to_end()
             else:
                 currentSongMoment = currentSongMoment+number
