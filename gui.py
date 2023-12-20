@@ -15,13 +15,25 @@ def prepare_all_songs():
     allSongs.clear_list()
     scan_folder(musicDirPath, allSongs)
 
+# widget with progress bar and time labels
+class ProgressBarFrame(customtkinter.CTkFrame):
+    def __init__(self, master, **kwargs):
+        super().__init__(master, **kwargs)
+
+        self.elapsedTime = customtkinter.CTkLabel(self, text='-:--:--' )
+        self.elapsedTime.grid(row=0, column=1, padx=10, sticky='NS')
+        self.pBard = customtkinter.CTkProgressBar(self, orientation="horizontal", mode="indeterminate", width=500)
+        self.pBard.grid(row=0, column=3, padx=10, sticky='NS')
+        self.totalTime = customtkinter.CTkLabel(self, text='-:--:--' )
+        self.totalTime.grid(row=0, column=5, padx=10, sticky='NS')
+        
 class App(customtkinter.CTk):
     def __init__(self):
         super().__init__()
 
-        # root - main app window
+        # main app window config
         self.title('MyPyPlayer')
-        self.geometry('1100x450+0+0')
+        self.geometry('1100x500+0+0')
         self.grid_columnconfigure((0, 9), weight=1)
         customtkinter.set_default_color_theme("green")
 
@@ -29,16 +41,20 @@ class App(customtkinter.CTk):
         style = ttk.Style(self)
         style.theme_use("default")
         style.configure("Treeview", background="#242424", 
-                        fieldbackground="#242424", foreground="#dce4ee", borderwidth=1, font=('Calibri', 12))
-        style.configure("Treeview.Heading", background="#242424", foreground="#dce4ee", font=('Calibri', 13, 'bold'))
+                        fieldbackground="#242424", foreground="#dce4ee", borderwidth=1, font=('Calibri', 15), rowheight=25)
+        style.configure("Treeview.Heading", background="#242424", foreground="#dce4ee", font=('Calibri', 16, 'bold'))
 
         self.tree = self.createTree() # creates the table
         self.populate_table(None)
         self.label = self.createCurrSongLabel() # creates the label with current song info
         self.buttons = self.createButtons() # creates the buttons
         self.slider = self.createVolumeSlider() # creates the volume slider
-        self.progressBar = self.createProgressBar() # creates the progress bar
-        self.progressBar.start()
+        self.progressBar = ProgressBarFrame(master=self, height=20) # creates the progress bar
+        self.progressBar.grid(row=2, column=0, padx=10, pady=20, columnspan=10, sticky='NS')
+        self.progressBar.pBard.start()
+        self.bind('<space>',lambda d: player.pause_resume_song())
+        self.bind('<KeyPress-Left>',lambda e: self.slider[0].set(self.slider[0].get()-1))
+        self.bind('<KeyPress-Right>',lambda f: self.slider[0].set(self.slider[0].get()+1))
         self.refresher() # starts the label refreshing method
 
     def createTree(self):
@@ -47,15 +63,15 @@ class App(customtkinter.CTk):
         songTable.grid(row=0, column=0, padx=20, pady=20, sticky='NS', columnspan=10)
 
         songTable.heading("nr", text="Nr.")
-        songTable.column("nr", minwidth=50, width=50, stretch=0)
+        songTable.column("nr", minwidth=100, width=100, stretch=0)
         songTable.heading("title", text="Title")
-        songTable.column("title", minwidth=250, width=250, stretch=0)
+        songTable.column("title", minwidth=350, width=350, stretch=0)
         songTable.heading("artist", text="Artist")
-        songTable.column("artist", minwidth=250, width=250, stretch=0)
+        songTable.column("artist", minwidth=350, width=350, stretch=0)
         songTable.heading("album", text="Album")
-        songTable.column("album", minwidth=250, width=250, stretch=0)
+        songTable.column("album", minwidth=350, width=350, stretch=0)
         songTable.heading("len", text="Track Length", anchor="e")
-        songTable.column("len", minwidth=100, width=100, stretch=0, anchor="e")
+        songTable.column("len", minwidth=150, width=150, stretch=0, anchor="e")
 
         # binding method to selecting item from the table
         songTable.bind('<Double-1>', self.play_song)
@@ -68,7 +84,7 @@ class App(customtkinter.CTk):
         volumeLabel.grid(row=3, column=6, padx=5, pady=20)
         volumeSlider = customtkinter.CTkSlider(self, from_=0, to=100, command=self.change_volume, width=150)
         volumeSlider.grid(row=3, column=7, pady=20)
-        volumeSlider.set(15) # starting volume
+        volumeSlider.set(15)
         player.change_volume(0.15) # starting volume
         volumeLabel2 = customtkinter.CTkLabel(self, text='🔊', font=('Calibri', 17))
         volumeLabel2.grid(row=3, column=8, padx=5, pady=20)
@@ -99,12 +115,6 @@ class App(customtkinter.CTk):
 
         return toStartButton, minusFiveButton, pauseResumeButton, plufFiveButton, toEndButton
     
-    def createProgressBar(self):
-        progressBar =  customtkinter.CTkProgressBar(self, orientation="horizontal", mode="indeterminate", width=500)
-        progressBar.grid(row=2, column=0, padx=10, pady=20, columnspan=10, sticky='NS')
-
-        return progressBar
-
     def refresher(self):
         player.check_if_playing()
 
@@ -114,8 +124,10 @@ class App(customtkinter.CTk):
             self.buttons[2].configure(text='⏸')
 
         if not player.isPlaying:
-            self.progressBar.configure(mode='indeterminate')
-            self.progressBar.start()
+            self.progressBar.pBard.configure(mode='indeterminate')
+            self.progressBar.pBard.start()
+            self.progressBar.elapsedTime.configure(text='-:--:--')
+            self.progressBar.totalTime.configure(text='-:--:--')
 
             for button in self.buttons:
                 if button._state == 'standard' or button._state != 'disabled': # kinda funky but it fixes the button flicker effect 
@@ -128,9 +140,11 @@ class App(customtkinter.CTk):
                     button.configure(state='standard')
 
             self.label.configure(text='🎵 ' + str(player))
-            self.progressBar.stop()
-            self.progressBar.configure(mode='determinate')
-            self.progressBar.set(player.return_moment() / player.return_length())
+            self.progressBar.pBard.stop()
+            self.progressBar.pBard.configure(mode='determinate')
+            self.progressBar.pBard.set(player.return_moment() / player.return_length())
+            self.progressBar.elapsedTime.configure(text=timedelta(seconds = round(player.return_moment())))
+            self.progressBar.totalTime.configure(text=timedelta(seconds = round(player.return_length())))
 
         if not player.isPlaying and not queue.check_if_empty(): # queue management 
             player.play_song(queue.songList[0])
