@@ -16,7 +16,6 @@ class Player:
         self.songLength = 0
         self.volume = 0.5
         self.elapsed_time = 0 #used when seeking through the song
-        mixer.music.set_volume(self.volume)
 
     def play_song(self, song):
         if os.path.isfile(song.path):
@@ -27,6 +26,7 @@ class Player:
             self.songAlbum = song.album
             self.isPlaying = True
             self.elapsed_time = 0
+            self.volume = mixer.music.get_volume()
             mixer.music.load(song.path)
             mixer.music.play(0, 0)
 
