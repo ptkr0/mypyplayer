@@ -20,6 +20,8 @@
 - Textual Slider (only in TUI version)
 - tkinter.ttk (only in GUI version)
 - CustomTkinter (only in GUI version)
+- CTkMessagebox (only in GUI version)
+- Pillow (only in GUI version)
 
 ## Installation
 
@@ -39,13 +41,12 @@ Use your mouse and keyboard to navigate through player.
 
 ## Future plans:
 
- - [ ] Tidy up the code
- - [ ] Create GUI version with the same backend
+ - [x] Tidy up the code
+ - [x] Create GUI version with the same backend
  - [ ] Add playlist support
  - [ ] Add menu to choosing custom music directory
 
 ## Made by:
 Piotr Radziszewski
-
 
 MyPHPoL 2023
