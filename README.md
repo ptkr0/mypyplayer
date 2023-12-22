@@ -4,11 +4,11 @@
 
 ## Features:
 
-- Fully working in your terminal
+- GUI and TUI versions both use the same backend
 - Play, skip, rewind, seek through tracks
-- Queue System which can be saved to played later
-- Fancy buttons, tables and slider
-- Supporting metadata from .mp3 files
+- Queue System which can be saved to be played later
+- Fancy buttons, tables sliders and progress bars
+- Supports metadata from .mp3 files
 - FROGS!
 
 ## Made with:
@@ -33,9 +33,15 @@ pip install -r requirements.txt
 
 ## Usage
 
-Before you start move all of your music to ./mymusic directory. Then launch the player with:
+Before you start move all of your music to ./mymusic directory.
+
+For text based user interface launch the player with:
 ```bash
 python tui.py
+```
+For graphical user interface launch the player with:
+```bash
+python gui.py
 ```
 Use your mouse and keyboard to navigate through player.
 
