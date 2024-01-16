@@ -11,6 +11,9 @@ from textual.binding import Binding
 from textual.widget import Widget
 from textual_slider import Slider
 
+from os import environ
+import os.path
+
 """Should appear in GUI version as a popup dialog aswell"""
 ABOUT_TEXT = r"""     
 MyPyPlayer is a simple music player written in Python with the use of:
@@ -41,7 +44,7 @@ After that press 'R' to refresh table
 Remember to exit program by clicking 'E' to save your current session
 """
 
-musicDirPath = r'.\mymusic' #path to the directory with user's music
+musicDirPath = os.path.join(environ["USERPROFILE"], "Music")
 allSongs = Songlist("All Songs") #stores all songs found in musicDirPath dir
 queue = Songlist("Queue") #stores songs that will play next
 

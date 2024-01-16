@@ -6,7 +6,10 @@ from CTkMessagebox import CTkMessagebox
 from model import *
 from player import *
 
-musicDirPath = r'.\mymusic'
+from os import environ
+import os.path
+
+musicDirPath = os.path.join(environ["USERPROFILE"], "Music")
 allSongs = Songlist("All Songs")
 queue = Songlist("Queue")
 

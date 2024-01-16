@@ -33,7 +33,7 @@ pip install -r requirements.txt
 
 ## Usage
 
-Before you start move all of your music to ./mymusic directory.
+MyPyPlayer will scan your Music directory, so be sure to move all your music there.
 
 For text based user interface launch the player with:
 ```bash
