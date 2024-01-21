@@ -66,27 +66,18 @@ class Songlist:
     def add_song_to_start(self, song):
         self.songList.insert(0, song)
 
-"""eyed3 seems pretty shitty coz some files might straight up just not work xd. todo: fix it or change lib"""
+"""scans folder for mp3 files and adds them to songlist"""
 def scan_folder(path, songList):
     for file in os.listdir(path):
         if file.endswith('.mp3'):
             filePath = os.path.join(path, file)
             audio = eyed3.load(filePath)
             eyed3.log.setLevel("ERROR")
-            if not audio:
-                pass
-            if(audio.tag.artist is None):
-                artist = 'unknown'
-            else:
-                artist = audio.tag.artist
-            if(audio.tag.title is None):
-                title = file
-            else:
-                title = audio.tag.title
-            if(audio.tag.album is None):
-                album = ' '
-            else:
-                album = audio.tag.album
+            if not audio or not audio.tag:
+                continue
+            artist = audio.tag.artist if audio.tag.artist else 'unknown'
+            title = audio.tag.title if audio.tag.title else file
+            album = audio.tag.album if audio.tag.album else ' '
             length = audio.info.time_secs
             song = Song(title, artist, length, filePath, album)
             songList.add_song(song)
